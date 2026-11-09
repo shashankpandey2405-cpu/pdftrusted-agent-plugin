@@ -1,0 +1,12 @@
+{
+  "name": "pdftrusted",
+  "owner": { "name": "PDFTrusted", "url": "https://www.pdftrusted.com" },
+  "plugins": [
+    {
+      "name": "pdftrusted",
+      "source": "./",
+      "description": "PDF tools and verified bank-statement extraction for AI agents, through the PDFTrusted API.",
+      "version": "0.1.0"
+    }
+  ]
+}
