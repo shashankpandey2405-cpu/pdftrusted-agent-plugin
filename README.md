@@ -24,7 +24,8 @@ Get a free API key at https://developers.pdftrusted.com and set it:
 export PDFTRUSTED_API_KEY=sk_...
 ```
 
-Without a key the client works as a guest (a few jobs a day, 25 MB / 50 pages) — enough to try it.
+Without a key the client works as a guest (a few jobs a day, 25 MB / 50 pages) — enough to try it. As a guest it keeps one
+cookie in `~/.pdftrusted/cookies.txt` (or `PDFTRUSTED_COOKIE_FILE`) so a later command can reach the same task.
 
 ## Use without an agent
 

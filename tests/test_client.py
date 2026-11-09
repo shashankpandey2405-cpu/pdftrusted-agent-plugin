@@ -150,5 +150,42 @@ class ClientTest(unittest.TestCase):
         self.assertEqual((code, out["error"]["code"]), (2, "bad_file"))
 
 
+class GuestCookieTest(unittest.TestCase):
+    """Without a key each command is a new process: the guest cookie must survive between runs, or a later
+    reviewed export / delete comes from a different guest."""
+
+    def load(self, env):
+        old = {k: os.environ.get(k) for k in env}
+        os.environ.update({k: v for k, v in env.items() if v is not None})
+        for k, v in env.items():
+            if v is None:
+                os.environ.pop(k, None)
+        try:
+            spec = importlib.util.spec_from_file_location("pdftrusted_guest", ROOT / "scripts" / "pdftrusted.py")
+            m = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(m)
+            return m
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    def test_guest_cookie_is_kept_between_runs_and_never_with_a_key(self):
+        import http.cookiejar
+        jar_file = pathlib.Path(tempfile.mkdtemp()) / "c" / "cookies.txt"
+        env = {"PDFTRUSTED_API_KEY": None, "PDFTRUSTED_COOKIE_FILE": str(jar_file)}
+        first = self.load(env)
+        first._jar.set_cookie(http.cookiejar.Cookie(0, "gw_guest", "abc", None, False, "api.example", True, False,
+                                                    "/", True, True, None, False, None, None, {}))
+        first._save_cookies()
+        self.assertTrue(jar_file.exists())
+        second = self.load(env)
+        self.assertEqual([c.value for c in second._jar], ["abc"])
+        keyed = self.load({"PDFTRUSTED_API_KEY": "sk_x", "PDFTRUSTED_COOKIE_FILE": str(jar_file)})
+        self.assertEqual(list(keyed._jar), [])
+
+
 if __name__ == "__main__":
     unittest.main()

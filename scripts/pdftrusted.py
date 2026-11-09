@@ -36,8 +36,27 @@ KEY = os.environ.get("PDFTRUSTED_API_KEY", "").strip()
 UA = f"pdftrusted-agent-plugin/{VERSION} (+https://developers.pdftrusted.com)"
 POLL_LIMIT_S = float(os.environ.get("PDFTRUSTED_TIMEOUT", 900))
 
-_jar = http.cookiejar.CookieJar()  # a guest owns its tasks by cookie
+# A guest owns its tasks by a cookie. Each command is a new process, so the cookie is kept in a small file between
+# runs; without that, a later `statement --xlsx --review-of` or `delete` would come from a "new" guest and the gateway
+# could not match it to the reading (the free reviewed export, deleting the server copy). Not used with an API key.
+COOKIE_FILE = Path(os.environ.get("PDFTRUSTED_COOKIE_FILE") or (Path.home() / ".pdftrusted" / "cookies.txt"))
+_jar = http.cookiejar.MozillaCookieJar(str(COOKIE_FILE))
+if not KEY:
+    try:
+        _jar.load(ignore_discard=True, ignore_expires=True)
+    except (OSError, http.cookiejar.LoadError):
+        pass
 _op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_jar))
+
+
+def _save_cookies() -> None:
+    if KEY:
+        return
+    try:
+        COOKIE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _jar.save(ignore_discard=True, ignore_expires=True)
+    except OSError:
+        pass
 
 
 class ApiError(Exception):
@@ -261,9 +280,12 @@ def main(argv=None) -> int:
     p = sub.add_parser("delete"); p.add_argument("task_id"); p.set_defaults(fn=cmd_delete)
     a = ap.parse_args(argv)
     try:
-        print(json.dumps(a.fn(a), indent=1, ensure_ascii=False))
+        result = a.fn(a)
+        _save_cookies()
+        print(json.dumps(result, indent=1, ensure_ascii=False))
         return 0
     except ApiError as e:
+        _save_cookies()
         print(json.dumps({"error": {"code": e.code, "message": e.message, **({"status": e.status} if e.status else {}), **e.extra}},
                          indent=1, ensure_ascii=False))
         return 2
