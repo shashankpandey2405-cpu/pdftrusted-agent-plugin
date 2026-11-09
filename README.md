@@ -14,7 +14,7 @@ A Claude Code plugin (and Agent Skills) that lets your agent do real work on PDF
 ## Install (Claude Code)
 
 ```bash
-/plugin marketplace add <this repository>
+/plugin marketplace add shashankpandey2405-cpu/pdftrusted-agent-plugin
 /plugin install pdftrusted@pdftrusted
 ```
 
