@@ -30,7 +30,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 BASE = os.environ.get("PDFTRUSTED_API", "https://api.pdftrusted.com").rstrip("/")
 KEY = os.environ.get("PDFTRUSTED_API_KEY", "").strip()
 UA = f"pdftrusted-agent-plugin/{VERSION} (+https://developers.pdftrusted.com)"
@@ -244,7 +244,9 @@ def cmd_statement(a) -> dict:
             res["json"] = a.out
         return res
     opts: dict = {"format": "xlsx"}
-    if a.review:
+    if getattr(a, "review_json", None):  # the MCP server passes the review inline
+        opts["review"] = a.review_json
+    elif a.review:
         opts["review"] = Path(a.review).read_text(encoding="utf-8")
     if a.review_of:
         opts["review_of"] = a.review_of

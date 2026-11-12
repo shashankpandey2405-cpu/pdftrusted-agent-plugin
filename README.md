@@ -27,6 +27,24 @@ export PDFTRUSTED_API_KEY=sk_...
 Without a key the client works as a guest (a few jobs a day, 25 MB / 50 pages) — enough to try it. As a guest it keeps one
 cookie in `~/.pdftrusted/cookies.txt` (or `PDFTRUSTED_COOKIE_FILE`) so a later command can reach the same task.
 
+## MCP server (Claude Desktop, Cursor, Windsurf, any MCP client)
+
+`scripts/mcp_server.py` is a dependency-free MCP server (stdio) with six tools: `pdf_tools`, `pdf_run`,
+`statement_check`, `statement_excel`, `usage`, `delete_task`. The Claude Code plugin starts it for you. For other
+clients, add it to their MCP config (`python` instead of `python3` on Windows):
+
+```json
+{
+  "mcpServers": {
+    "pdftrusted": {
+      "command": "python3",
+      "args": ["/path/to/pdftrusted-agent-plugin/scripts/mcp_server.py"],
+      "env": { "PDFTRUSTED_API_KEY": "sk_..." }
+    }
+  }
+}
+```
+
 ## Use without an agent
 
 The skills drive one dependency-free client (Python 3.8+), which also works on its own:

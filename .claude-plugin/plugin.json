@@ -1,9 +1,33 @@
 {
   "name": "pdftrusted",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Let your AI agent work with PDFs through the PDFTrusted API: convert, compress, merge, split, OCR, protect and 60+ more tools, plus bank and card statements to Excel with every row checked against its balances.",
-  "author": { "name": "PDFTrusted", "url": "https://www.pdftrusted.com" },
+  "author": {
+    "name": "PDFTrusted",
+    "url": "https://www.pdftrusted.com"
+  },
   "homepage": "https://developers.pdftrusted.com",
   "license": "MIT",
-  "keywords": ["pdf", "convert", "ocr", "bank statement", "excel", "compress", "merge", "api"]
+  "keywords": [
+    "pdf",
+    "convert",
+    "ocr",
+    "bank statement",
+    "excel",
+    "compress",
+    "merge",
+    "api",
+    "mcp"
+  ],
+  "mcpServers": {
+    "pdftrusted": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/mcp_server.py"
+      ],
+      "env": {
+        "PDFTRUSTED_API_KEY": "${PDFTRUSTED_API_KEY}"
+      }
+    }
+  }
 }
